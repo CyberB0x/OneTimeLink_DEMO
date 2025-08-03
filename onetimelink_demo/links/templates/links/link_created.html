@@ -1,0 +1,26 @@
+{% extends 'links/base.html' %}
+
+{% block title %}Link Created{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-12 col-md-8 text-center">
+        <div class="alert alert-success">
+            ✅ The link was successfully created!
+        </div>
+
+        <p>Send it to the recipient:</p>
+
+        <div class="input-group mb-3">
+            <input type="text" class="form-control" readonly
+                   value="{{ request.build_absolute_uri|cut:request.path }}{% url 'access_link' link.pk %}">
+            <button class="btn btn-outline-secondary"
+                    onclick="navigator.clipboard.writeText(this.previousElementSibling.value)">
+                Copy
+            </button>
+        </div>
+
+        <a href="/" class="btn btn-secondary mt-2">Create Another</a>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,35 @@
+{% extends 'links/base.html' %}
+
+{% block title %}Access to One-Time Link{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-12 col-md-8">
+
+        {% if error %}
+        <div class="alert alert-danger">{{ error }}</div>
+        {% endif %}
+
+        {% if file_url %}
+        <div class="alert alert-success d-flex align-items-center justify-content-between flex-wrap">
+            📎 <strong>File:</strong>
+            <a href="{{ file_url }}" download class="btn btn-outline-primary btn-sm ms-2 mt-2 mt-sm-0">
+                Download file
+            </a>
+        </div>
+        {% endif %}
+
+        {% if text %}
+        <h5 class="mt-4">📝 Text:</h5>
+        <pre class="bg-light border rounded p-3" style="white-space: pre-wrap;">{{ text }}</pre>
+        {% endif %}
+
+        {% if not file_url and not text %}
+        <div class="alert alert-warning text-center">
+            No content available to display.
+        </div>
+        {% endif %}
+
+    </div>
+</div>
+{% endblock %}

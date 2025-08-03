@@ -1,0 +1,35 @@
+{% extends 'links/base.html' %}
+
+{% block title %}Link Content{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-12 col-md-8">
+
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h2 class="text-center mb-4">Link Content</h2>
+
+                {% if file_url %}
+                    <div class="alert alert-info d-flex justify-content-between align-items-center">
+                        📎 File is ready
+                        <a href="{{ file_url }}" download class="btn btn-sm btn-primary ms-2">Download</a>
+                    </div>
+                {% endif %}
+
+                {% if text %}
+                    <h5 class="mt-3">📝 Text:</h5>
+                    <pre class="bg-light p-3 border rounded" style="white-space: pre-wrap;">{{ text }}</pre>
+                {% endif %}
+
+                {% if not file_url and not text %}
+                    <div class="alert alert-warning text-center">
+                        No content available to display.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}
