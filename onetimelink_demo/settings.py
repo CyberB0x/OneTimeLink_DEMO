@@ -4,12 +4,15 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'dev-secret-key')
-DEBUG = False  # На Render лучше выключить DEBUG
+DEBUG = False
 
-ALLOWED_HOSTS = ['*']  # Можно оставить *, но CSRF нужен обязательно
+ALLOWED_HOSTS = ['*']
+
 CSRF_TRUSTED_ORIGINS = [
-    'https://onetimelink-demo.onrender.com',  # Замени на свой домен Render
+    'https://onetimelink-demo.onrender.com',
 ]
+
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 # Приложения
 INSTALLED_APPS = [
@@ -19,7 +22,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'links',  # твое приложение
+    'links',
 ]
 
 MIDDLEWARE = [
