@@ -1,14 +1,11 @@
-from pathlib import Path
 import os
-
-import logging
+from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.environ.get('SECRET_KEY', 'dev-secret-key')
 
 DEBUG = False
-
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -21,7 +18,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
-    'onetimelink_demo.settings.Log400Middleware',
+    'onetimelink_demo.settings.Log400Middleware',  # для отладки 400
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -57,46 +54,35 @@ DATABASES = {
     }
 }
 
-AUTH_PASSWORD_VALIDATORS = [
-    {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
-    {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
-    {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator'},
-    {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
-]
-
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_TZ = True
 
 STATIC_URL = '/static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
-STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+# 🔹 Render host
 RENDER_EXTERNAL_HOSTNAME = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
 
 if RENDER_EXTERNAL_HOSTNAME:
     ALLOWED_HOSTS = [RENDER_EXTERNAL_HOSTNAME, '.onrender.com']
-    CSRF_TRUSTED_ORIGINS = [
-        f"https://{RENDER_EXTERNAL_HOSTNAME}",
-        "https://onrender.com",
-        "https://render.com",
-    ]
+    CSRF_TRUSTED_ORIGINS = [f"https://{RENDER_EXTERNAL_HOSTNAME}"]
 else:
     ALLOWED_HOSTS = ['*']
-    CSRF_TRUSTED_ORIGINS = ["https://127.0.0.1", "http://127.0.0.1"]
+    CSRF_TRUSTED_ORIGINS = ['https://*.onrender.com']
+
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 
-# 100 MB upload limit
-DATA_UPLOAD_MAX_MEMORY_SIZE = 104857600
-FILE_UPLOAD_MAX_MEMORY_SIZE = 104857600
-
-
+# 🔹 Лог 400
+import logging
 logger = logging.getLogger("django.request")
-
 
 class Log400Middleware:
     def __init__(self, get_response):
@@ -105,5 +91,9 @@ class Log400Middleware:
     def __call__(self, request):
         response = self.get_response(request)
         if response.status_code == 400:
-            logger.error("400 Bad Request on %s %s", request.method, request.path)
+            logger.error("400 Bad Request: %s %s HOST=%s ORIGIN=%s",
+                         request.method,
+                         request.path,
+                         request.get_host(),
+                         request.headers.get('Origin'))
         return response
