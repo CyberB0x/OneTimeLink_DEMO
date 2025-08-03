@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: onetimelink-demo
+    env: python
+    buildCommand: pip install -r requirements.txt && python manage.py collectstatic --noinput
+    startCommand: gunicorn onetimelink_demo.wsgi
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12
