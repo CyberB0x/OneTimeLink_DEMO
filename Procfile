@@ -1,1 +1,1 @@
-web: gunicorn onetimelink_demo.wsgi
+web: gunicorn onetimelink_demo.wsgi:application
