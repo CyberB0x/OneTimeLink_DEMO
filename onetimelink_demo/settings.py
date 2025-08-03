@@ -1,6 +1,8 @@
 from pathlib import Path
 import os
 
+import logging
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.environ.get('SECRET_KEY', 'dev-secret-key')
@@ -19,6 +21,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'onetimelink_demo.settings.Log400Middleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -79,11 +82,28 @@ if RENDER_EXTERNAL_HOSTNAME:
     ALLOWED_HOSTS = [RENDER_EXTERNAL_HOSTNAME, '.onrender.com']
     CSRF_TRUSTED_ORIGINS = [
         f"https://{RENDER_EXTERNAL_HOSTNAME}",
-        "https://*.onrender.com"
+        "https://onrender.com",
+        "https://render.com",
     ]
 else:
     ALLOWED_HOSTS = ['*']
-    CSRF_TRUSTED_ORIGINS = ['https://*.onrender.com']
+    CSRF_TRUSTED_ORIGINS = ["https://127.0.0.1", "http://127.0.0.1"]
 
-# Чтобы Django понимал, что запросы через HTTPS
-SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+# 100 MB upload limit
+DATA_UPLOAD_MAX_MEMORY_SIZE = 104857600
+FILE_UPLOAD_MAX_MEMORY_SIZE = 104857600
+
+
+logger = logging.getLogger("django.request")
+
+
+class Log400Middleware:
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        response = self.get_response(request)
+        if response.status_code == 400:
+            logger.error("400 Bad Request on %s %s", request.method, request.path)
+        return response
