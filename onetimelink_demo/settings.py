@@ -4,9 +4,22 @@ import os
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.environ.get('SECRET_KEY', 'dev-secret-key')
-
 DEBUG = False
 
+# -------------------------------
+# 🔹 Основные настройки
+# -------------------------------
+RENDER_EXTERNAL_HOSTNAME = os.environ.get('RENDER_EXTERNAL_HOSTNAME', 'onetimelink-demo.onrender.com')
+
+ALLOWED_HOSTS = ['*', RENDER_EXTERNAL_HOSTNAME, '.onrender.com']
+CSRF_TRUSTED_ORIGINS = [
+    f"https://{RENDER_EXTERNAL_HOSTNAME}",
+    "https://*.onrender.com",
+]
+
+# -------------------------------
+# 🔹 Приложения
+# -------------------------------
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -46,6 +59,9 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'onetimelink_demo.wsgi.application'
 
+# -------------------------------
+# 🔹 База данных SQLite
+# -------------------------------
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -53,6 +69,9 @@ DATABASES = {
     }
 }
 
+# -------------------------------
+# 🔹 Пароли
+# -------------------------------
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
     {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
@@ -60,54 +79,26 @@ AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
 
+# -------------------------------
+# 🔹 Локализация
+# -------------------------------
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_TZ = True
 
+# -------------------------------
+# 🔹 Статика и медиа
+# -------------------------------
 STATIC_URL = '/static/'
 MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'
+
 STATIC_ROOT = BASE_DIR / 'staticfiles'
+MEDIA_ROOT = BASE_DIR / 'media'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# Настройки для Render
-RENDER_EXTERNAL_HOSTNAME = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
-
-if RENDER_EXTERNAL_HOSTNAME:
-    ALLOWED_HOSTS = [RENDER_EXTERNAL_HOSTNAME, '.onrender.com']
-    CSRF_TRUSTED_ORIGINS = [
-        f"https://{RENDER_EXTERNAL_HOSTNAME}",
-        "https://onetimelink-demo.onrender.com",
-    ]
-else:
-    ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
-    CSRF_TRUSTED_ORIGINS = ['http://127.0.0.1', 'http://localhost']
-
-# Чтобы Django понимал HTTPS через прокси
+# -------------------------------
+# 🔹 Render: доверяем HTTPS заголовкам
+# -------------------------------
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-
-# Логирование ошибок CSRF
-import logging
-
-LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'handlers': {
-        'console': {
-            'class': 'logging.StreamHandler',
-        },
-    },
-    'loggers': {
-        'django.security.csrf': {
-            'handlers': ['console'],
-            'level': 'DEBUG',
-        },
-        'django.request': {
-            'handlers': ['console'],
-            'level': 'ERROR',
-            'propagate': True,
-        },
-    },
-}
