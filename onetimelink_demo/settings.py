@@ -1,21 +1,12 @@
-import os
 from pathlib import Path
+import os
+import sys
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# -------------------- Основные настройки --------------------
 SECRET_KEY = os.environ.get('SECRET_KEY', 'dev-secret-key')
-
 DEBUG = False
-
-ALLOWED_HOSTS = [
-    'onetimelink-demo.onrender.com',
-    'localhost',
-    '127.0.0.1'
-]
-
-CSRF_TRUSTED_ORIGINS = [
-    'https://onetimelink-demo.onrender.com'
-]
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -56,6 +47,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'onetimelink_demo.wsgi.application'
 
+# -------------------- База данных --------------------
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -63,6 +55,7 @@ DATABASES = {
     }
 }
 
+# -------------------- Пароли --------------------
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
     {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
@@ -70,17 +63,50 @@ AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
 
+# -------------------- Локализация --------------------
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_TZ = True
 
+# -------------------- Статика и медиа --------------------
 STATIC_URL = '/static/'
 MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'
+
 STATIC_ROOT = BASE_DIR / 'staticfiles'
+MEDIA_ROOT = BASE_DIR / 'media'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# Проксирование HTTPS через Render
+# -------------------- Render настройки --------------------
+RENDER_EXTERNAL_HOSTNAME = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
+
+if RENDER_EXTERNAL_HOSTNAME:
+    ALLOWED_HOSTS = [RENDER_EXTERNAL_HOSTNAME, '.onrender.com']
+    CSRF_TRUSTED_ORIGINS = [
+        f"https://{RENDER_EXTERNAL_HOSTNAME}",
+        "https://*.onrender.com"
+    ]
+else:
+    ALLOWED_HOSTS = ['*']
+    CSRF_TRUSTED_ORIGINS = ['https://*.onrender.com']
+
+# Чтобы Django понимал, что запросы через HTTPS
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+# -------------------- Логирование --------------------
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+            'stream': sys.stdout,
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'DEBUG',
+    },
+}
