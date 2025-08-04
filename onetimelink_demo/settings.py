@@ -110,3 +110,7 @@ LOGGING = {
         'level': 'DEBUG',
     },
 }
+
+
+DATA_UPLOAD_MAX_MEMORY_SIZE = 15 * 1024 * 1024  # 15 MB запас
+FILE_UPLOAD_MAX_MEMORY_SIZE = 15 * 1024 * 1024
