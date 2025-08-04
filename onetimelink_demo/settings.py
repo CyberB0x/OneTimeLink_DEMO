@@ -1,5 +1,6 @@
 import os
 from pathlib import Path
+import logging
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -80,8 +81,6 @@ else:
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 
-# 🔹 Лог 400
-import logging
 logger = logging.getLogger("django.request")
 
 class Log400Middleware:
@@ -91,9 +90,20 @@ class Log400Middleware:
     def __call__(self, request):
         response = self.get_response(request)
         if response.status_code == 400:
-            logger.error("400 Bad Request: %s %s HOST=%s ORIGIN=%s",
-                         request.method,
-                         request.path,
-                         request.get_host(),
-                         request.headers.get('Origin'))
+            host = request.get_host()
+            origin = request.headers.get('Origin')
+            referer = request.headers.get('Referer')
+            ua = request.headers.get('User-Agent')
+
+            log_message = (
+                f"400 Bad Request:\n"
+                f"  METHOD: {request.method}\n"
+                f"  PATH: {request.path}\n"
+                f"  HOST: {host}\n"
+                f"  ORIGIN: {origin}\n"
+                f"  REFERER: {referer}\n"
+                f"  USER-AGENT: {ua}"
+            )
+            logger.error(log_message)
+            print(log_message)  # 🔹 попадёт в Render logs
         return response
