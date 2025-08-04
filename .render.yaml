@@ -2,6 +2,7 @@ services:
   - type: web
     name: onetimelink-demo
     env: python
-    buildCommand: pip install -r requirements.txt && python manage.py collectstatic --noinput
-    startCommand: gunicorn onetimelink_demo.wsgi:application
     plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: python manage.py migrate --noinput && python manage.py collectstatic --noinput && gunicorn onetimelink_demo.wsgi:application
+
