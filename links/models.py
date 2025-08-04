@@ -4,7 +4,7 @@ import uuid
 import os
 
 def temp_file_path(instance, filename):
-    """Сохраняем файлы во временную папку внутри MEDIA_ROOT/tmp"""
+    """Сохраняем файлы во временную папку внутри для Render MEDIA_ROOT/tmp"""
     return os.path.join('tmp', f"{uuid.uuid4()}_{filename}")
 
 class OneTimeLink(models.Model):
