@@ -2,11 +2,10 @@ from django.db import models
 from django.utils import timezone
 import uuid
 import os
-from tempfile import gettempdir
 
 def temp_file_path(instance, filename):
-    """Хранение во временной папке"""
-    return os.path.join(gettempdir(), f"{uuid.uuid4()}_{filename}")
+    """Сохраняем файлы во временную папку внутри MEDIA_ROOT/tmp"""
+    return os.path.join('tmp', f"{uuid.uuid4()}_{filename}")
 
 class OneTimeLink(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -17,6 +16,11 @@ class OneTimeLink(models.Model):
 
     def is_expired(self):
         return timezone.now() > self.created_at + timezone.timedelta(minutes=self.expiration_minutes)
+
+    def delete_file(self):
+        """Удаляет файл, если он есть"""
+        if self.file and self.file.storage.exists(self.file.name):
+            self.file.delete(save=False)
 
     def __str__(self):
         return f"Link {self.id}"
