@@ -1,13 +1,19 @@
-import os
 from pathlib import Path
-import logging
+import os
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# Секретный ключ (Render возьмёт из переменных окружения)
 SECRET_KEY = os.environ.get('SECRET_KEY', 'dev-secret-key')
 
+# На Render нужно выключить DEBUG
 DEBUG = False
 
+# Хосты и CSRF для Render
+ALLOWED_HOSTS = ['.onrender.com']
+CSRF_TRUSTED_ORIGINS = ['https://*.onrender.com']
+
+# Приложения
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -19,8 +25,8 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
-    'onetimelink_demo.settings.Log400Middleware',  # для отладки 400
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # для статики на Render
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -48,6 +54,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'onetimelink_demo.wsgi.application'
 
+# SQLite для демо
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -55,55 +62,28 @@ DATABASES = {
     }
 }
 
+# Валидация паролей
+AUTH_PASSWORD_VALIDATORS = [
+    {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
+]
+
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_TZ = True
 
+# Статика и медиа
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# 🔹 Render host
-RENDER_EXTERNAL_HOSTNAME = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
-
-if RENDER_EXTERNAL_HOSTNAME:
-    ALLOWED_HOSTS = [RENDER_EXTERNAL_HOSTNAME, '.onrender.com']
-    CSRF_TRUSTED_ORIGINS = [f"https://{RENDER_EXTERNAL_HOSTNAME}"]
-else:
-    ALLOWED_HOSTS = ['*']
-    CSRF_TRUSTED_ORIGINS = ['https://*.onrender.com']
-
+# Чтобы Django понимал, что запросы через HTTPS
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-
-
-logger = logging.getLogger("django.request")
-
-class Log400Middleware:
-    def __init__(self, get_response):
-        self.get_response = get_response
-
-    def __call__(self, request):
-        response = self.get_response(request)
-        if response.status_code == 400:
-            host = request.get_host()
-            origin = request.headers.get('Origin')
-            referer = request.headers.get('Referer')
-            ua = request.headers.get('User-Agent')
-
-            log_message = (
-                f"400 Bad Request:\n"
-                f"  METHOD: {request.method}\n"
-                f"  PATH: {request.path}\n"
-                f"  HOST: {host}\n"
-                f"  ORIGIN: {origin}\n"
-                f"  REFERER: {referer}\n"
-                f"  USER-AGENT: {ua}"
-            )
-            logger.error(log_message)
-            print(log_message)  # 🔹 попадёт в Render logs
-        return response
