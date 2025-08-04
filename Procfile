@@ -1,1 +1,1 @@
-web: python manage.py migrate && gunicorn onetimelink_demo.wsgi
+web: python manage.py migrate --noinput && python manage.py collectstatic --noinput && gunicorn onetimelink_demo.wsgi
