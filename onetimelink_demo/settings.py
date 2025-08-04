@@ -3,17 +3,10 @@ import os
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Секретный ключ (Render возьмёт из переменных окружения)
 SECRET_KEY = os.environ.get('SECRET_KEY', 'dev-secret-key')
 
-# На Render нужно выключить DEBUG
 DEBUG = False
 
-# Хосты и CSRF для Render
-ALLOWED_HOSTS = ['.onrender.com']
-CSRF_TRUSTED_ORIGINS = ['https://*.onrender.com']
-
-# Приложения
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -26,7 +19,6 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',  # для статики на Render
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -54,7 +46,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'onetimelink_demo.wsgi.application'
 
-# SQLite для демо
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -62,7 +53,6 @@ DATABASES = {
     }
 }
 
-# Валидация паролей
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
     {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
@@ -75,15 +65,49 @@ TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_TZ = True
 
-# Статика и медиа
 STATIC_URL = '/static/'
-STATIC_ROOT = BASE_DIR / 'staticfiles'
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
-
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# Чтобы Django понимал, что запросы через HTTPS
+# Настройки для Render
+RENDER_EXTERNAL_HOSTNAME = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
+
+if RENDER_EXTERNAL_HOSTNAME:
+    ALLOWED_HOSTS = [RENDER_EXTERNAL_HOSTNAME, '.onrender.com']
+    CSRF_TRUSTED_ORIGINS = [
+        f"https://{RENDER_EXTERNAL_HOSTNAME}",
+        "https://onetimelink-demo.onrender.com",
+    ]
+else:
+    ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
+    CSRF_TRUSTED_ORIGINS = ['http://127.0.0.1', 'http://localhost']
+
+# Чтобы Django понимал HTTPS через прокси
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+# Логирование ошибок CSRF
+import logging
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'loggers': {
+        'django.security.csrf': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+        },
+        'django.request': {
+            'handlers': ['console'],
+            'level': 'ERROR',
+            'propagate': True,
+        },
+    },
+}
